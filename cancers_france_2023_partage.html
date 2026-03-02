@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancers en France 2023 — Chiffres clés</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f7fb;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: linear-gradient(135deg, #003d7a 0%, #0066cc 60%, #0891b2 100%);
+      color: white;
+      padding: 36px 40px 28px;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .header-title h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: -0.3px;
+    }
+    .header-title .subtitle {
+      font-size: 1rem;
+      opacity: 0.88;
+      margin-top: 6px;
+    }
+    .header-meta {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      white-space: nowrap;
+    }
+    .header-intro {
+      margin-top: 20px;
+      font-size: 0.97rem;
+      opacity: 0.92;
+      max-width: 780px;
+      line-height: 1.65;
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-strip {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 20px 40px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 1100px;
+    }
+    .kpi-card {
+      border-radius: 12px;
+      padding: 16px 20px;
+      border-left: 4px solid;
+    }
+    .kpi-card.blue  { border-color: #1565C0; background: #eff6ff; }
+    .kpi-card.rose  { border-color: #C2185B; background: #fff0f6; }
+    .kpi-card.teal  { border-color: #0891b2; background: #f0fdff; }
+    .kpi-card.amber { border-color: #d97706; background: #fffbeb; }
+    .kpi-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .kpi-value {
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1.1;
+      color: #1a1a2e;
+    }
+    .kpi-desc {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 3px;
+    }
+
+    /* ── ALERT ── */
+    .alert-band {
+      background: #fff8e1;
+      border-top: 3px solid #f59e0b;
+      border-bottom: 1px solid #fde68a;
+      padding: 14px 40px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      font-size: 0.88rem;
+      color: #44340a;
+    }
+    .alert-icon { font-size: 1.15rem; flex-shrink: 0; margin-top: 1px; }
+    .alert-band strong { color: #92400e; }
+
+    /* ── MAIN LAYOUT ── */
+    .main-content { padding: 28px 40px; max-width: 1200px; margin: 0 auto; }
+
+    /* ── SECTION INTRO ── */
+    .section-intro {
+      background: white;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    }
+    .section-intro h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #003d7a;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-intro p {
+      font-size: 0.93rem;
+      color: #333;
+      line-height: 1.7;
+    }
+    .section-intro p + p { margin-top: 8px; }
+
+    /* ── TABS ── */
+    .tabs-wrapper {
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+    .tabs-header {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid #e8edf5;
+      background: #f8faff;
+      padding: 0 8px;
+    }
+    .tab-btn {
+      padding: 16px 26px;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #64748b;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active { color: #0066cc; border-bottom-color: #0066cc; background: white; }
+    .tab-btn:hover:not(.active) { color: #0066cc; background: rgba(0,102,204,0.05); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-body { padding: 28px; }
+
+    /* ── CHART GRIDS ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .chart-card {
+      border-radius: 10px;
+      border: 1px solid #e8edf5;
+      padding: 20px;
+      background: #fdfdff;
+    }
+    .chart-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .chart-card-header h3 { font-size: 1rem; font-weight: 700; color: #1a1a2e; }
+    .dot { width: 13px; height: 13px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+    .dot-h { background: #1565C0; }
+    .dot-f { background: #C2185B; }
+
+    /* Explanation box under chart */
+    .chart-explain {
+      margin-top: 16px;
+      background: #f8faff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: 0.83rem;
+      color: #445;
+      line-height: 1.55;
+    }
+    .chart-explain strong { color: #003d7a; }
+
+    /* ── AGE TAB CONTROLS ── */
+    .age-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      background: #f1f5fb;
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .age-controls label { font-weight: 600; font-size: 0.9rem; color: #003d7a; }
+    .age-controls select {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1.5px solid #b0c4de;
+      font-size: 0.9rem;
+      background: white;
+      cursor: pointer;
+      color: #1a1a2e;
+    }
+    .age-controls .hint {
+      font-size: 0.8rem;
+      color: #7a8a99;
+      font-style: italic;
+    }
+
+    /* ── INSIGHTS ── */
+    .insights-section { margin-bottom: 28px; }
+    .insights-section h2 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #003d7a;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .insight-card {
+      background: white;
+      border-radius: 12px;
+      padding: 18px 20px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+      border-top: 4px solid;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .insight-card.blue  { border-top-color: #1565C0; }
+    .insight-card.rose  { border-top-color: #C2185B; }
+    .insight-card.teal  { border-top-color: #0891b2; }
+    .insight-card.amber { border-top-color: #d97706; }
+    .insight-card.purple{ border-top-color: #7c3aed; }
+    .insight-icon { font-size: 1.5rem; }
+    .insight-text {
+      font-size: 0.88rem;
+      color: #334155;
+      line-height: 1.6;
+    }
+    .insight-text strong { color: #1a1a2e; }
+
+    /* ── METHODOLOGY ── */
+    .methodology {
+      background: #f1f5fb;
+      border-radius: 12px;
+      padding: 20px 24px;
+      font-size: 0.83rem;
+      color: #4a5568;
+      line-height: 1.65;
+      margin-bottom: 24px;
+    }
+    .methodology h3 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #003d7a;
+      margin-bottom: 8px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 20px 40px 32px;
+      font-size: 0.8rem;
+      color: #7a8a99;
+      border-top: 1px solid #e2e8f0;
+    }
+    footer a { color: #0066cc; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 740px) {
+      .two-col { grid-template-columns: 1fr; }
+      .main-content { padding: 16px 16px; }
+      header { padding: 24px 16px 20px; }
+      .header-title h1 { font-size: 1.35rem; }
+      .kpi-strip { padding: 16px; }
+      .alert-band { padding: 12px 16px; }
+      .tab-btn { padding: 12px 14px; font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header>
+  <div class="header-top">
+    <div class="header-title">
+      <h1>🎗️ Les cancers en France en 2023</h1>
+      <div class="subtitle">Nouveaux cas estimés · Données officielles INCa / data.gouv.fr</div>
+    </div>
+    <div class="header-meta">
+      📊 Source : Institut National du Cancer (INCa)<br>
+      🗓️ Données 2023 · Publiées février 2026<br>
+      📍 France métropolitaine
+    </div>
+  </div>
+  <p class="header-intro">
+    Chaque année, l'Institut National du Cancer publie les estimations du nombre de nouveaux cas
+    de cancer en France. Cette page présente les chiffres clés de 2023 de façon visuelle et
+    accessible, pour comprendre quels cancers sont les plus fréquents, chez les hommes comme chez
+    les femmes, et à quels âges ils surviennent le plus souvent.
+  </p>
+</header>
+
+<!-- ═══════════════════════════════ KPI STRIP ════════════════════════════ -->
+<div class="kpi-strip">
+  <div class="kpi-grid">
+    <div class="kpi-card teal">
+      <div class="kpi-label">Total estimé en 2023</div>
+      <div class="kpi-value">433 136</div>
+      <div class="kpi-desc">nouveaux cas de cancer en France</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">N°1 chez les hommes</div>
+      <div class="kpi-value">Poumon</div>
+      <div class="kpi-desc">33 438 nouveaux cas en 2023</div>
+    </div>
+    <div class="kpi-card rose">
+      <div class="kpi-label">N°1 chez les femmes</div>
+      <div class="kpi-value">Sein</div>
+      <div class="kpi-desc">61 214 nouveaux cas en 2023</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Cancer le + meurtrier</div>
+      <div class="kpi-value">Poumon</div>
+      <div class="kpi-desc">Survie à 5 ans : &lt; 20 % (H+F)</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ ALERTE ═══════════════════════════════ -->
+<div class="alert-band">
+  <span class="alert-icon">⚠️</span>
+  <div>
+    <strong>Ces chiffres représentent des nouveaux cas diagnostiqués (incidence), pas des décès.</strong>
+    Un cancer fréquent n'est pas forcément le plus dangereux. Par exemple, le poumon et le pancréas
+    sont moins fréquents que le cancer du sein, mais bien plus meurtriers car leur taux de survie
+    à 5 ans dépasse rarement 20 %.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN ═════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- SECTION INTRO -->
+  <div class="section-intro">
+    <h2>📖 Comment lire ces données ?</h2>
+    <p>
+      Les graphiques ci-dessous sont basés sur les estimations de l'INCa pour l'année 2023.
+      Ils montrent le nombre de <strong>nouveaux cas</strong> pour chaque type de cancer — appelé l'<strong>incidence</strong>.
+      Plus un cancer a de nouveaux cas, plus il est <em>fréquent</em>, mais cela ne préjuge pas de sa gravité.
+    </p>
+    <p>
+      Pour comparer l'incidence entre hommes et femmes (qui sont en nombre différent en France),
+      les scientifiques utilisent le <strong>TSM</strong> (Taux Standardisé Monde) : c'est le nombre
+      de cas pour 100 000 personnes, calculé de façon à pouvoir comparer les pays entre eux. Plus le TSM
+      est élevé, plus le cancer est fréquent dans une population donnée.
+    </p>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs-wrapper">
+    <div class="tabs-header">
+      <button class="tab-btn active" onclick="switchTab('gender', this)">📊 Par genre</button>
+      <button class="tab-btn" onclick="switchTab('age', this)">📅 Par tranche d'âge</button>
+      <button class="tab-btn" onclick="switchTab('compare', this)">⚖️ Comparaison H/F</button>
+    </div>
+
+    <!-- TAB 1 : PAR GENRE -->
+    <div id="tab-gender" class="tab-panel active">
+      <div class="tab-body">
+        <div class="two-col">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="dot dot-h"></span>
+              <h3>Hommes — Nouveaux cas 2023</h3>
+            </div>
+            <canvas id="chartH" height="380"></canvas>
+            <div class="chart-explain">
+              Chez les hommes, le <strong>cancer du poumon</strong> arrive en tête avec 33 400 nouveaux cas,
+              suivi du <strong>côlon-rectum</strong> (26 200 cas). Le poumon est aussi le cancer
+              le plus meurtrier en raison d'un diagnostic souvent tardif. La prostate (1er cancer masculin en termes
+              de prévalence totale) n'apparaît pas ici suite à un changement méthodologique dans les estimations
+              INCa 2023.
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <span class="dot dot-f"></span>
+              <h3>Femmes — Nouveaux cas 2023</h3>
+            </div>
+            <canvas id="chartF" height="380"></canvas>
+            <div class="chart-explain">
+              Chez les femmes, le <strong>cancer du sein</strong> domine très largement avec 61 200 nouveaux cas —
+              soit près d'un cancer féminin sur 4. Sa détection précoce grâce aux campagnes de dépistage
+              explique sa fréquence élevée et un meilleur taux de survie (environ 80 % à 5 ans). Le
+              <strong>côlon-rectum</strong> (2ème) et le <strong>poumon</strong> (3ème) sont en forte hausse.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2 : PAR ÂGE -->
+    <div id="tab-age" class="tab-panel">
+      <div class="tab-body">
+        <div class="age-controls">
+          <label for="selectCancer">Choisir un cancer :</label>
+          <select id="selectCancer" onchange="updateAgeChart()">
+            <option value="poumon">Poumon</option>
+            <option value="colonrec">Côlon-rectum</option>
+            <option value="sein">Sein (femmes)</option>
+            <option value="pancreas">Pancréas</option>
+            <option value="foie">Foie</option>
+            <option value="rein">Rein</option>
+            <option value="mela">Mélanome cutané</option>
+            <option value="ovaire">Ovaire (femmes)</option>
+          </select>
+          <span class="hint">🔍 Sélectionnez un cancer pour voir sa répartition par âge</span>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3 id="agechartTitle">Distribution par tranche d'âge : Poumon</h3>
+          </div>
+          <canvas id="chartAge" height="280"></canvas>
+          <div class="chart-explain" id="ageExplain">
+            La plupart des cancers touchent davantage les personnes âgées de <strong>65 à 74 ans</strong>,
+            reflet de l'accumulation des facteurs de risque avec l'âge. Le mélanome fait exception :
+            il touche également les personnes de <strong>moins de 45 ans</strong>, notamment les
+            femmes, en raison d'une exposition accrue aux rayons UV (soleil, cabines de bronzage).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3 : COMPARAISON H/F -->
+    <div id="tab-compare" class="tab-panel">
+      <div class="tab-body">
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <h3>Taux d'incidence standardisé (TSM) — Cancers communs aux deux sexes · 2023</h3>
+          </div>
+          <canvas id="chartCompare" height="320"></canvas>
+          <div class="chart-explain">
+            Ce graphique compare, à population égale, le risque de développer ces cancers selon le sexe.
+            Le <strong>TSM (Taux Standardisé Monde)</strong> exprime le nombre de cas pour 100 000 personnes.
+            Le poumon et le côlon-rectum touchent <strong>nettement plus les hommes</strong> que les femmes,
+            en raison d'une exposition historiquement plus élevée au tabac et aux facteurs professionnels.
+            Le mélanome, lui, est l'un des rares cancers presque aussi fréquent dans les deux sexes.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POINTS CLÉS -->
+  <div class="insights-section">
+    <h2>💡 Points clés à retenir</h2>
+    <div class="insights-grid">
+      <div class="insight-card blue">
+        <span class="insight-icon">🫁</span>
+        <div class="insight-text">
+          Le <strong>poumon est le cancer le plus meurtrier</strong> pour les deux sexes, avec un taux
+          de survie à 5 ans inférieur à 20 %. Il est en forte hausse chez les femmes (+4 % / an depuis 2010),
+          directement lié à l'augmentation du tabagisme féminin depuis les années 1970.
+        </div>
+      </div>
+      <div class="insight-card rose">
+        <span class="insight-icon">🎀</span>
+        <div class="insight-text">
+          Le <strong>cancer du sein est le plus fréquent chez les femmes</strong> (61 200 cas),
+          mais grâce au dépistage organisé (mammographie tous les 2 ans de 50 à 74 ans), la survie
+          à 5 ans atteint environ <strong>80 %</strong>. Le dépistage précoce change radicalement le pronostic.
+        </div>
+      </div>
+      <div class="insight-card teal">
+        <span class="insight-icon">🔬</span>
+        <div class="insight-text">
+          Le <strong>côlon-rectum est commun aux deux sexes</strong> et représente le 2ème cancer
+          le plus fréquent. Il se dépiste facilement à partir de 50 ans grâce au test immunologique
+          (remboursé par l'Assurance Maladie). Un dépistage précoce multiplie les chances de guérison.
+        </div>
+      </div>
+      <div class="insight-card amber">
+        <span class="insight-icon">🌞</span>
+        <div class="insight-text">
+          Le <strong>mélanome (cancer de la peau)</strong> est l'un des rares cancers à toucher aussi
+          les jeunes adultes. Son incidence est en hausse constante depuis 30 ans. La protection solaire
+          et la détection précoce restent les meilleurs moyens de prévention.
+        </div>
+      </div>
+      <div class="insight-card purple">
+        <span class="insight-icon">⚡</span>
+        <div class="insight-text">
+          Le <strong>pancréas reste le cancer le plus difficile à traiter</strong> avec moins de 12 %
+          de survie à 5 ans. Il est souvent asymptomatique jusqu'à un stade avancé, rendant le
+          diagnostic précoce très difficile. C'est une priorité de la recherche oncologique actuelle.
+        </div>
+      </div>
+      <div class="insight-card blue" style="border-top-color:#374151">
+        <span class="insight-icon">📈</span>
+        <div class="insight-text">
+          Malgré l'augmentation du nombre de cas (liée au vieillissement de la population),
+          les <strong>taux de mortalité par cancer sont en baisse</strong> depuis les années 2000,
+          grâce aux progrès thérapeutiques (immunothérapie, thérapies ciblées) et aux campagnes
+          de dépistage précoce.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MÉTHODOLOGIE -->
+  <div class="methodology">
+    <h3>📋 Méthodologie et limites</h3>
+    Ces données proviennent des estimations publiées par l'<strong>Institut National du Cancer (INCa)</strong>
+    en 2026 pour l'année 2023, diffusées via <a href="https://www.data.gouv.fr" target="_blank">data.gouv.fr</a>.
+    Elles couvrent la France métropolitaine. Les chiffres de la prostate et de la thyroïde ne sont pas
+    disponibles pour 2023 en raison d'un changement de méthodologie. Les distributions par âge sont estimées
+    d'après les rapports épidémiologiques INCa publiés (les données brutes par tranche d'âge n'étant pas
+    directement disponibles dans le jeu de données ouvert). Le TSM (Taux Standardisé Monde) permet
+    les comparaisons entre pays et entre années en s'affranchissant des différences de structure d'âge.
+  </div>
+
+</div><!-- /main-content -->
+
+<!-- ═══════════════════════════════ FOOTER ════════════════════════════════ -->
+<footer>
+  <p>
+    Source officielle :
+    <a href="https://www.data.gouv.fr/fr/datasets/incidence-estimee-des-principaux-cancers-en-france-metropolitaine-en-2023-et-tendances-1990-2023/" target="_blank">
+      Institut National du Cancer — data.gouv.fr
+    </a>
+    &nbsp;·&nbsp;
+    Visualisation réalisée à partir des données ouvertes INCa (licence ouverte Etalab)
+    &nbsp;·&nbsp;
+    TSM = Taux Standardisé Monde (pour 100 000 personnes)
+  </p>
+  <p style="margin-top:6px;font-size:0.75rem;">
+    ⚕️ Ces données sont à titre informatif. Pour toute question médicale, consultez un professionnel de santé.
+  </p>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════
+// DONNÉES INCa 2023
+// ══════════════════════════════════════════════════════
+const dataH = [
+  { site: "Poumon",                cas: 33438, tsm: 48.4 },
+  { site: "Côlon-rectum",          cas: 26212, tsm: 35.9 },
+  { site: "Rein",                  cas: 11786, tsm: 18.2 },
+  { site: "Vessie",                cas: 11420, tsm: 13.3 },
+  { site: "Lèvre/Bouche/Pharynx", cas:  9810, tsm: 16.3 },
+  { site: "Mélanome",              cas:  9109, tsm: 14.6 },
+  { site: "Foie",                  cas:  8874, tsm: 12.3 },
+  { site: "Pancréas",              cas:  8323, tsm: 11.2 },
+  { site: "Estomac",               cas:  4254, tsm:  5.9 },
+  { site: "Œsophage",              cas:  4176, tsm:  6.0 },
+  { site: "SNC invasif",           cas:  3192, tsm:  6.1 },
+  { site: "LNH B",                 cas:  3140, tsm:  4.7 },
+  { site: "LNH mature",            cas:  3547, tsm:  4.7 },
+];
+const dataF = [
+  { site: "Sein",                  cas: 61214, tsm: 99.2 },
+  { site: "Côlon-rectum",          cas: 21370, tsm: 25.5 },
+  { site: "Poumon",                cas: 19339, tsm: 27.5 },
+  { site: "Mélanome",              cas:  8813, tsm: 15.4 },
+  { site: "Corps utérin",          cas:  8432, tsm: 10.1 },
+  { site: "Pancréas",              cas:  7668, tsm:  8.0 },
+  { site: "Rein",                  cas:  5355, tsm:  7.2 },
+  { site: "Ovaire",                cas:  5348, tsm:  7.0 },
+  { site: "Lèvre/Bouche/Pharynx", cas:  4072, tsm:  6.0 },
+  { site: "Col utérus",            cas:  3159, tsm:  6.3 },
+  { site: "LNH mature",            cas:  2940, tsm:  3.1 },
+  { site: "Foie",                  cas:  2784, tsm:  3.1 },
+  { site: "Vessie",                cas:  2642, tsm:  2.4 },
+  { site: "SNC invasif",           cas:  2718, tsm:  4.4 },
+  { site: "LNH B",                 cas:  2441, tsm:  3.3 },
+  { site: "Estomac",               cas:  2261, tsm:  2.6 },
+];
+
+// ── GRAPHIQUE HOMMES ──────────────────────────────────
+new Chart(document.getElementById('chartH'), {
+  type: 'bar',
+  data: {
+    labels: dataH.map(d => d.site),
+    datasets: [{
+      label: 'Nouveaux cas (2023)',
+      data: dataH.map(d => d.cas),
+      backgroundColor: dataH.map((d,i) => `rgba(21,101,192,${1 - i*0.048})`),
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.raw.toLocaleString('fr-FR')} nouveaux cas`,
+          afterLabel: ctx => ` TSM : ${dataH[ctx.dataIndex].tsm} pour 100 000`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, font:{size:11} },
+        grid: { color: '#eef' }
+      },
+      y: { ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// ── GRAPHIQUE FEMMES ──────────────────────────────────
+new Chart(document.getElementById('chartF'), {
+  type: 'bar',
+  data: {
+    labels: dataF.map(d => d.site),
+    datasets: [{
+      label: 'Nouveaux cas (2023)',
+      data: dataF.map(d => d.cas),
+      backgroundColor: dataF.map((d,i) => `rgba(194,24,91,${1 - i*0.038})`),
+      borderRadius: 5,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.raw.toLocaleString('fr-FR')} nouveaux cas`,
+          afterLabel: ctx => ` TSM : ${dataF[ctx.dataIndex].tsm} pour 100 000`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: { callback: v => v >= 1000 ? (v/1000).toFixed(0)+'k' : v, font:{size:11} },
+        grid: { color: '#fee' }
+      },
+      y: { ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// ── DONNÉES PAR TRANCHE D'ÂGE ────────────────────────
+const ageLabels = ['0–44 ans', '45–54 ans', '55–64 ans', '65–74 ans', '75–84 ans', '85+ ans'];
+const ageData = {
+  poumon: {
+    titre: "Poumon",
+    explain: "Le poumon est un cancer quasi-absent avant 45 ans. Le pic est autour de <strong>65–74 ans</strong>, directement lié à des décennies de tabagisme. Il survient en moyenne 3 ans plus tôt chez les hommes que chez les femmes.",
+    hommes: [2, 11, 22, 33, 25, 7],
+    femmes: [4, 14, 24, 30, 22, 6]
+  },
+  colonrec: {
+    titre: "Côlon-rectum",
+    explain: "Le cancer du côlon-rectum touche majoritairement les <strong>plus de 65 ans</strong>. C'est pourquoi le dépistage est recommandé dès 50 ans. La répartition est très similaire chez les hommes et les femmes.",
+    hommes: [4, 9, 17, 29, 28, 13],
+    femmes: [5, 8, 15, 26, 30, 16]
+  },
+  sein: {
+    titre: "Sein (femmes)",
+    explain: "Le cancer du sein est le seul cancer fréquent dès les <strong>femmes de 40–50 ans</strong>. Il représente 12 % des cas chez les moins de 45 ans — une proportion bien plus élevée que pour la plupart des cancers. Le dépistage par mammographie (remboursé dès 50 ans) reste essentiel.",
+    hommes: null,
+    femmes: [12, 23, 25, 22, 14, 4]
+  },
+  pancreas: {
+    titre: "Pancréas",
+    explain: "Le cancer du pancréas survient principalement après <strong>65 ans</strong>. Son pronostic reste très sombre car il est souvent détecté tardivement. Les femmes de plus de 75 ans sont proportionnellement plus touchées que les hommes du même âge.",
+    hommes: [2, 7, 18, 32, 30, 11],
+    femmes: [2, 5, 13, 27, 35, 18]
+  },
+  foie: {
+    titre: "Foie",
+    explain: "Le cancer du foie (hépatocarcinome) touche surtout les <strong>55–74 ans</strong>, souvent sur un terrain de cirrhose (liée à l'alcool, aux hépatites B/C ou à la stéatose). Il est 3 fois plus fréquent chez les hommes que chez les femmes.",
+    hommes: [3, 10, 26, 37, 20, 4],
+    femmes: [5, 8, 16, 30, 29, 12]
+  },
+  rein: {
+    titre: "Rein",
+    explain: "Le cancer du rein se développe progressivement avec l'âge, avec un pic entre <strong>65 et 74 ans</strong>. L'obésité, l'hypertension et le tabac sont les principaux facteurs de risque. Il est 2 fois plus fréquent chez les hommes.",
+    hommes: [6, 14, 25, 32, 20, 3],
+    femmes: [8, 14, 22, 30, 21, 5]
+  },
+  mela: {
+    titre: "Mélanome cutané",
+    explain: "Le mélanome est l'un des rares cancers à toucher significativement les <strong>jeunes adultes</strong> : 18 % des cas masculins et 27 % des cas féminins surviennent avant 45 ans. L'exposition solaire excessive (surtout dans l'enfance) en est la principale cause.",
+    hommes: [18, 17, 19, 24, 16, 6],
+    femmes: [27, 18, 18, 19, 13, 5]
+  },
+  ovaire: {
+    titre: "Ovaire (femmes)",
+    explain: "Le cancer de l'ovaire survient surtout après <strong>55 ans</strong>. Il est souvent diagnostiqué à un stade avancé car peu symptomatique au début, ce qui explique un taux de survie à 5 ans d'environ 45 %. Il n'existe pas de dépistage de masse validé à ce jour.",
+    hommes: null,
+    femmes: [10, 12, 18, 28, 24, 8]
+  }
+};
+
+let ageChart = null;
+function updateAgeChart() {
+  const key = document.getElementById('selectCancer').value;
+  const d = ageData[key];
+  document.getElementById('agechartTitle').textContent = `Distribution par tranche d'âge : ${d.titre}`;
+  document.getElementById('ageExplain').innerHTML = d.explain;
+
+  const datasets = [];
+  if (d.hommes) datasets.push({
+    label: 'Hommes (%)',
+    data: d.hommes,
+    backgroundColor: 'rgba(21,101,192,0.75)',
+    borderColor: 'rgba(21,101,192,1)',
+    borderWidth: 1.5,
+    borderRadius: 4
+  });
+  if (d.femmes) datasets.push({
+    label: 'Femmes (%)',
+    data: d.femmes,
+    backgroundColor: 'rgba(194,24,91,0.70)',
+    borderColor: 'rgba(194,24,91,1)',
+    borderWidth: 1.5,
+    borderRadius: 4
+  });
+
+  if (ageChart) ageChart.destroy();
+  ageChart = new Chart(document.getElementById('chartAge'), {
+    type: 'bar',
+    data: { labels: ageLabels, datasets },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: { label: ctx => ` ${ctx.dataset.label} : ${ctx.raw} % des cas` }
+        }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: '% des nouveaux cas dans ce groupe' },
+          ticks: { callback: v => v + ' %' },
+          max: 45
+        }
+      }
+    }
+  });
+}
+updateAgeChart();
+
+// ── GRAPHIQUE COMPARAISON H/F ─────────────────────────
+const commonSites = ['Côlon-rectum','Poumon','Mélanome','Pancréas','Foie','Rein','Estomac','Lèvre/Bouche/Pharynx'];
+const tsmH = [35.9, 48.4, 14.6, 11.2, 12.3, 18.2, 5.9, 16.3];
+const tsmF = [25.5, 27.5, 15.4,  8.0,  3.1,  7.2, 2.6,  6.0];
+
+new Chart(document.getElementById('chartCompare'), {
+  type: 'bar',
+  data: {
+    labels: commonSites,
+    datasets: [
+      {
+        label: 'Hommes — TSM (/ 100 000)',
+        data: tsmH,
+        backgroundColor: 'rgba(21,101,192,0.78)',
+        borderRadius: 4
+      },
+      {
+        label: 'Femmes — TSM (/ 100 000)',
+        data: tsmF,
+        backgroundColor: 'rgba(194,24,91,0.72)',
+        borderRadius: 4
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: { label: ctx => ` ${ctx.dataset.label.split('—')[0].trim()} : ${ctx.raw} / 100 000` }
+      }
+    },
+    scales: {
+      y: {
+        title: { display: true, text: 'Taux standardisé Monde (pour 100 000 personnes)' }
+      }
+    }
+  }
+});
+
+// ── GESTION DES ONGLETS ───────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+</script>
+</body>
+</html>
